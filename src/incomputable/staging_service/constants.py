@@ -1,0 +1,12 @@
+
+NEW      = 'NEW'
+ACTIVE   = 'ACTIVE'
+DONE     = 'DONE'
+FAILED   = 'FAILED'
+CANCELED = 'CANCELED'
+
+TRANSFER = 'TRANSFER'
+COPY     = 'COPY'
+LINK     = 'LINK'
+MOVE     = 'MOVE'
+

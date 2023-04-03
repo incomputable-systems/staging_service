@@ -1,0 +1,31 @@
+#!/usr/bin/env python3
+
+__copyright__ = "Copyright 2014-2016, http://radical.rutgers.edu"
+__license__   = "MIT"
+
+
+import sys
+
+import incomputable.staging_service as inc_ss
+
+
+# ------------------------------------------------------------------------------
+#
+def main():
+
+    service = inc_ss.StagingService()
+    service.start()
+
+    ret = service.wait()
+    sys.exit(ret)
+
+
+# ------------------------------------------------------------------------------
+#
+if __name__ == "__main__":
+
+    main()
+
+
+# ------------------------------------------------------------------------------
+
