@@ -15,6 +15,7 @@ def main():
 
     service = inc_ss.StagingService()
     service.start()
+    print(service.addr)
 
     ret = service.wait()
     sys.exit(ret)

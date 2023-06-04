@@ -4,9 +4,7 @@ __license__   = "MIT"
 
 import os
 
-import radical.saga            as rs
-import radical.saga.filesystem as rsfs
-import radical.utils           as ru
+import radical.utils as ru
 
 from .constants import NEW, ACTIVE, DONE, FAILED, CANCELED
 from .constants import TRANSFER, COPY, LINK, MOVE
@@ -23,13 +21,23 @@ class StagingService(ru.zmq.Server):
     #
     def __init__(self):
 
-        self._session       = rs.Session()
-        self._cache_lock    = ru.Lock()
-        self._saga_fs_cache = dict()
-
         ru.zmq.Server.__init__(self)
 
         self.register_request('stage', self._request_stage)
+
+        self._handlers = list()
+
+        for name in ['saga']:
+
+          # try:
+            if True:
+                modname = 'incomputable.staging_service.handlers.%s' % name
+                module  = ru.import_module(modname)
+                handler = module.StagingHandler()
+                self._handlers.append(handler)
+
+          # except Exception as e:
+          #     print('skip handler %s: %s' % (name, repr(e)))
 
 
     # --------------------------------------------------------------------------
@@ -40,11 +48,9 @@ class StagingService(ru.zmq.Server):
         messages on the control channel
         '''
 
-        # TODO: respect flags in directive
-
-        action  = request['action']
-        flags   = request['flags']
-        uid     = request['uid']
+        uid     = request.get('uid')    or ru.generate_id('staging')
+        action  = request.get('action') or TRANSFER
+        flags   = request.get('flags')  or 0
         src     = request['source']
         tgt     = request['target']
         prof_id = request.get('prof_id')   # staging on behalf of this entity
@@ -60,27 +66,20 @@ class StagingService(ru.zmq.Server):
         self._log.info('transfer %s', src)
         self._log.info('      to %s', tgt)
 
-        # open the staging directory for the target, and cache it
-        # url used for cache: tgt url w/o path
-        tmp      = rs.Url(tgt)
-        tmp.path = '/'
-        key      = str(tmp)
+        for handler in self._handlers:
 
-        with self._cache_lock:
-            if key in self._saga_fs_cache:
-                fs = self._saga_fs_cache[key]
+            try:
+                if action == TRANSFER:
+                    handler.transfer(src, tgt, flags)
 
-            else:
-                fs = rsfs.Directory(key, session=self._session)
-                self._saga_fs_cache[key] = fs
+                request['state'] = DONE
 
-        flags |= rsfs.CREATE_PARENTS
-        if os.path.isdir(src) or src.endswith('/'):
-            flags |= rsfs.RECURSIVE
+            except Exception as e:
+                print('skip handler %s for request %s' % (handler.name, uid))
 
-        fs.copy(src, tgt, flags=flags)
-
-        request['state'] = DONE
+        if request['state'] != DONE:
+            self._prof.prof('staging_fail', uid=prof_id, msg=uid)
+            raise RuntimeError('no handler found for request %s' % uid)
 
         self._prof.prof('staging_stop', uid=prof_id, msg=uid)
 

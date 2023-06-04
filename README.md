@@ -1,8 +1,5 @@
 # Incomputable - Staging Service
 
-[![Build Status](https://github.com/incomputable-systems/radical.pilot/actions/workflows/ci.yml/badge.svg)](https://github.com/incomputable-systems/radical.pilot/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/incomputable-systems/radical.pilot/branch/devel/graph/badge.svg)](https://codecov.io/gh/incomputable-systems/radical.pilot)
-
 ...
 
 ## Documentation
