@@ -27,17 +27,16 @@ class StagingService(ru.zmq.Server):
 
         self._handlers = list()
 
-        for name in ['saga']:
+        for name in ['saga', 's3']:
 
-          # try:
-            if True:
+            try:
                 modname = 'incomputable.staging_service.handlers.%s' % name
                 module  = ru.import_module(modname)
                 handler = module.StagingHandler()
                 self._handlers.append(handler)
 
-          # except Exception as e:
-          #     print('skip handler %s: %s' % (name, repr(e)))
+            except Exception as e:
+                print('skip handler %s: %s' % (name, repr(e)))
 
 
     # --------------------------------------------------------------------------

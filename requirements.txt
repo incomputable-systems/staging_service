@@ -1,4 +1,5 @@
 
 radical.saga>=1.22
 radical.utils>=1.12
+boto3
 
